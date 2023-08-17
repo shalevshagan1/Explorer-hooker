@@ -1,0 +1,1 @@
+General Idea: Hook explorer.exe and cmd.exe WINAPI functions that it uses to retrieve files, using DLL Injection and IAT Hooking
